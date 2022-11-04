@@ -10,6 +10,7 @@ public class Shoot : MonoBehaviour
     public GameObject parent;
     float speed = 15;
     float turnSpeed = 2;
+    bool canShoot = true;
 
     // Start is called before the first frame update
     void Start()
@@ -17,20 +18,49 @@ public class Shoot : MonoBehaviour
         
     }
 
+    void CanShootAgain()
+    {
+        canShoot = true;
+    }
+
+
     // Update is called once per frame
     void Fire()
     {
-        GameObject shell = Instantiate(shellPrefab, shellSpawnPos.transform.position, shellSpawnPos.transform.rotation);
+        if(canShoot)
+        {
+            GameObject shell = Instantiate(shellPrefab, shellSpawnPos.transform.position, shellSpawnPos.transform.rotation);
+            shell.GetComponent<Rigidbody>().velocity = speed * this.transform.forward;
+            canShoot = false;
+            Invoke("CanShootAgain", 0.5f);
+        }
+
+        
     }
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-            Fire();
 
-        Vector3 direction = target.transform.position - parent.transform.position.normalized;
+        Vector3 direction = (target.transform.position - parent.transform.position).normalized;
         Quaternion lookRotation = Quaternion.LookRotation(new Vector3(direction.x, 0, direction.z));
-        parent.transform.rotation = Quaternion.Slerp(parent.transform.rotation, lookRotation, Time.deltaTime + turnSpeed);
+        parent.transform.rotation = Quaternion.Slerp(parent.transform.rotation, lookRotation, Time.deltaTime * turnSpeed);
+
+        float? angle = RotateTurret();
+        
+        if(angle != null && Vector3.Angle(direction, parent.transform.forward) < 10 )
+        Fire();
+    }
+
+    float? RotateTurret()
+    {
+        float? angle = CalculateAngle(false);
+
+        if(angle != null)
+        {
+            this.transform.localEulerAngles = new Vector3(360f - (float)angle, 0f, 0f);
+        }
+
+        return angle;
     }
 
     float? CalculateAngle(bool low)
