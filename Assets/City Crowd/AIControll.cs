@@ -28,9 +28,4 @@ public class AIControll : MonoBehaviour {
             agent.SetDestination(goalLocations[Random.Range(0, goalLocations.Length)].transform.position);
         }
     }
-
-    internal void DetectNewObstacle(Vector3 point)
-    {
-        throw new System.NotImplementedException();
-    }
 }
